@@ -1,6 +1,8 @@
 {
   "main": "./src/index.ts",
   "type": "module",
+  "name": "ycombinator-news-crawler",
+  "author": "Flors Rueda",
   "scripts": {
     "build": "npx tsc",
     "start": "tsx src/index.ts",
