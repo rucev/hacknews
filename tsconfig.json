@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "lib": [
+      "ES6"
+    ],
+    "outDir": "build",
+    "strict": true,
+    "types": [
+      "node"
+    ]
+  }
+}
