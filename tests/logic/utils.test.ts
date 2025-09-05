@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { filterLongTitles, sortByComments, formatEntry } from '../../src/logic/utils'
+import {
+  filterLongTitles,
+  filterShortTitles,
+  sortByComments,
+  sortByPoints,
+  formatEntry,
+  countWords
+} from '../../src/logic/utils'
 import type { NewsEntry } from '../../src/interfaces'
 
 const entries: NewsEntry[] = [
@@ -8,6 +15,14 @@ const entries: NewsEntry[] = [
   { number: 3, title: 'Another very long news title for testing', points: 30, comments: 25 },
   { number: 4, title: 'Tiny', points: 5, comments: 2 },
 ]
+
+describe('countWords', () => {
+  it('counts only real words ignoring empty strings', () => {
+    expect(countWords('Hello world')).toBe(2)
+    expect(countWords('')).toBe(0)
+    expect(countWords('   Many   spaces  here  ')).toBe(3)
+  })
+})
 
 describe('filterLongTitles', () => {
   it('filters entries with more than 5 words in the title', () => {
@@ -22,6 +37,21 @@ describe('filterLongTitles', () => {
       { number: 6, title: 'Short', points: 2, comments: 0 },
     ]
     const result = filterLongTitles(shortEntries)
+    expect(result).toEqual([])
+  })
+})
+
+describe('filterShortTitles', () => {
+  it('filters entries with 5 or fewer words in the title', () => {
+    const result = filterShortTitles(entries)
+    expect(result.map(e => e.number)).toEqual([1, 4])
+  })
+
+  it('returns empty array if all titles are long', () => {
+    const longEntries = [
+      { number: 1, title: 'This is a long title with many words', points: 10, comments: 5 },
+    ]
+    const result = filterShortTitles(longEntries)
     expect(result).toEqual([])
   })
 })
@@ -42,6 +72,14 @@ describe('sortByComments', () => {
     const result = sortByComments([...equalComments])
     const numbers = result.map(e => e.number)
     expect(numbers).toEqual([1, 2, 3])
+  })
+})
+
+describe('sortByPoints', () => {
+  it('sorts entries descending by points', () => {
+    const result = sortByPoints([...entries])
+    const points = result.map(e => e.points)
+    expect(points).toEqual([30, 20, 10, 5])
   })
 })
 

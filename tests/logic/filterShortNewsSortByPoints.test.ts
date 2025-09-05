@@ -1,18 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { NewsEntry, NewsEntries } from '../../src/interfaces'
 
-import filterLongNewsSortByComments from '../../src/logic/filterLongNewsSortByComments'
+import filterShortNewsSortByPoints from '../../src/logic/filterShortNewsSortByPoints'
 import Repository from '../../src/data/repository'
 
 vi.mock('../../src/logic/utils', () => ({
-  filterLongTitles: vi.fn((entries: NewsEntry[]) => entries),
-  sortByComments: vi.fn((entries: NewsEntry[]) => entries),
+  filterShortTitles: vi.fn((entries: NewsEntry[]) => entries),
+  sortByPoints: vi.fn((entries: NewsEntry[]) => entries),
 }))
 
 import * as utils from '../../src/logic/utils'
 
-describe('crawlLoop / processEntries', () => {
+describe('filters short titles, sorts by pints, and calls saveFilteredShortEntry', () => {
   let repoMock: Repository
+
   const sampleEntries: NewsEntry[] = [
     { number: 1, title: 'Short title', points: 10, comments: 5 },
     { number: 2, title: 'This is a title with more than five words', points: 20, comments: 15 },
@@ -27,26 +28,23 @@ describe('crawlLoop / processEntries', () => {
   beforeEach(() => {
     repoMock = {
       getMostRecentEntry: vi.fn().mockReturnValue(recentNews),
-      saveFilteredLongEntry: vi.fn(),
+      saveFilteredShortEntry: vi.fn(),
     } as unknown as Repository
 
     vi.spyOn(Repository.prototype, 'getMostRecentEntry').mockImplementation(repoMock.getMostRecentEntry)
-    vi.spyOn(Repository.prototype, 'saveFilteredLongEntry').mockImplementation(repoMock.saveFilteredLongEntry)
-
-    vi.spyOn(console, 'error').mockImplementation(() => { })
+    vi.spyOn(Repository.prototype, 'saveFilteredShortEntry').mockImplementation(repoMock.saveFilteredShortEntry)
 
     vi.clearAllMocks()
   })
 
-  it('filters long titles, sorts by comments, and calls saveFilteredLongEntry', () => {
-    filterLongNewsSortByComments()
+  it('filters short titles, sorts by points, and calls saveFilteredShortEntry', () => {
+    filterShortNewsSortByPoints()
 
     expect(repoMock.getMostRecentEntry).toHaveBeenCalled()
-
-    expect(utils.filterLongTitles).toHaveBeenCalledWith(sampleEntries)
-    expect(utils.sortByComments).toHaveBeenCalled()
+    expect(utils.filterShortTitles).toHaveBeenCalledWith(sampleEntries)
+    expect(utils.sortByPoints).toHaveBeenCalled()
 
     const expectedFiltered = sampleEntries
-    expect(repoMock.saveFilteredLongEntry).toHaveBeenCalledWith(expectedFiltered, recentNews.timeStamp)
+    expect(repoMock.saveFilteredShortEntry).toHaveBeenCalledWith(expectedFiltered, recentNews.timeStamp)
   })
 })

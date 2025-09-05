@@ -20,15 +20,22 @@ export const formatEntry = (rawEntry: string[]): NewsEntry | null => {
   return { number, title, points, comments }
 }
 
-export const filterLongTitles = (entries: NewsEntry[]): NewsEntry[] => {
-  const filtered = entries.filter(entry => {
-    const wordCount = entry.title.trim().split(' ').filter(str => str.toUpperCase() !== str.toLowerCase()).length
-    return wordCount > 5
-  })
+export const countWords = (text: string): number => {
+  return text.trim().split(' ').filter(str => str.toUpperCase() !== str.toLowerCase()).length
+}
 
-  return filtered
+export const filterLongTitles = (entries: NewsEntry[]): NewsEntry[] => {
+  return entries.filter(entry => countWords(entry.title) > 5)
+}
+
+export const filterShortTitles = (entries: NewsEntry[]): NewsEntry[] => {
+  return entries.filter(entry => countWords(entry.title) <= 5)
 }
 
 export const sortByComments = (entries: NewsEntry[]): NewsEntry[] => {
   return entries.sort((news1, news2) => news2.comments - news1.comments)
+}
+
+export const sortByPoints = (entries: NewsEntry[]): NewsEntry[] => {
+  return entries.sort((news1, news2) => news2.points - news1.points)
 }

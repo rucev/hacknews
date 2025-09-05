@@ -21,10 +21,7 @@ vi.mock('fs', () => {
     writeFileSync: vi.fn(),
     mkdirSync: vi.fn(),
   }
-  return {
-    default: fsMock,
-    ...fsMock,
-  }
+  return { default: fsMock, ...fsMock }
 })
 
 import fs from 'fs'
@@ -46,7 +43,9 @@ describe('Repository', () => {
   it('writes new file if none exists', () => {
     ; (fs.existsSync as any).mockReturnValue(false)
     repo.addNewEntry(sampleNewsEntries)
+
     expect(fs.writeFileSync).toHaveBeenCalled()
+
     const writtenData = (fs.writeFileSync as any).mock.calls[0][1]
     const parsed = JSON.parse(writtenData)
     expect(parsed).toHaveLength(1)
@@ -64,9 +63,11 @@ describe('Repository', () => {
   })
 
   it('reads existing file and appends entry', () => {
-    ; (fs.existsSync as any).mockReturnValue(true)
-      ; (fs.readFileSync as any).mockReturnValue(JSON.stringify([sampleNewsEntries]))
+    (fs.existsSync as any).mockReturnValue(true);
+    (fs.readFileSync as any).mockReturnValue(JSON.stringify([sampleNewsEntries]))
+
     repo.addNewEntry(sampleNewsEntries)
+
     const writtenData = (fs.writeFileSync as any).mock.calls[0][1]
     const parsed = JSON.parse(writtenData)
     expect(parsed).toHaveLength(2)
@@ -84,9 +85,11 @@ describe('Repository', () => {
   })
 
   it('handles invalid JSON gracefully', () => {
-    ; (fs.existsSync as any).mockReturnValue(true)
-      ; (fs.readFileSync as any).mockReturnValue('INVALID JSON')
+    (fs.existsSync as any).mockReturnValue(true);
+    (fs.readFileSync as any).mockReturnValue('INVALID JSON')
+
     repo.addNewEntry(sampleNewsEntries)
+
     const writtenData = (fs.writeFileSync as any).mock.calls[0][1]
     const parsed = JSON.parse(writtenData)
     expect(parsed).toHaveLength(1)
@@ -104,7 +107,7 @@ describe('Repository', () => {
   })
 
   it('getOldEntries returns empty array if file does not exist', () => {
-    ; (fs.existsSync as any).mockReturnValue(false)
+    (fs.existsSync as any).mockReturnValue(false)
     const oldEntries = repo.getOldEntries()
     expect(oldEntries).toEqual([])
   })
@@ -112,6 +115,7 @@ describe('Repository', () => {
   it('getOldEntries returns parsed entries if file exists', () => {
     ; (fs.existsSync as any).mockReturnValue(true)
       ; (fs.readFileSync as any).mockReturnValue(JSON.stringify([sampleNewsEntries]))
+
     const oldEntries = repo.getOldEntries()
     expect(oldEntries).toHaveLength(1)
     expect(oldEntries[0].entries[0].title).toBe('Test news title')
@@ -121,9 +125,10 @@ describe('Repository', () => {
     const oldEntries = [
       { ...sampleNewsEntries, timeStamp: new Date('2025-01-01') },
       { ...sampleNewsEntries, timeStamp: new Date('2025-12-31') },
-    ]
-      ; (fs.existsSync as any).mockReturnValue(true)
-      ; (fs.readFileSync as any).mockReturnValue(JSON.stringify(oldEntries))
+    ];
+    (fs.existsSync as any).mockReturnValue(true);
+    (fs.readFileSync as any).mockReturnValue(JSON.stringify(oldEntries))
+
     const mostRecent = repo.getMostRecentEntry()
     expect(new Date(mostRecent.timeStamp).toISOString()).toBe(new Date('2025-12-31').toISOString())
   })
@@ -131,11 +136,32 @@ describe('Repository', () => {
   it('saveFilteredLongEntry writes a file with correct data', () => {
     const date = new Date('2025-09-05T12:00:00Z')
     repo.saveFilteredLongEntry([sampleNewsEntry], date)
+
+    expect(fs.mkdirSync).toHaveBeenCalledWith(repo['folderPathLong'], { recursive: true })
     expect(fs.writeFileSync).toHaveBeenCalled()
+
     const fileName = (fs.writeFileSync as any).mock.calls[0][0]
     const writtenData = (fs.writeFileSync as any).mock.calls[0][1]
     const parsed = JSON.parse(writtenData)
+
     expect(parsed).toEqual([sampleNewsEntry])
     expect(fileName).toContain('2025-09-05')
+    expect(fileName).toMatch(/\.json$/)
+  })
+
+  it('saveFilteredShortEntry writes a file with correct data', () => {
+    const date = new Date('2025-09-05T12:00:00Z')
+    repo.saveFilteredShortEntry([sampleNewsEntry], date)
+
+    expect(fs.mkdirSync).toHaveBeenCalledWith(repo['folderPathShort'], { recursive: true })
+    expect(fs.writeFileSync).toHaveBeenCalled()
+
+    const fileName = (fs.writeFileSync as any).mock.calls[0][0]
+    const writtenData = (fs.writeFileSync as any).mock.calls[0][1]
+    const parsed = JSON.parse(writtenData)
+
+    expect(parsed).toEqual([sampleNewsEntry])
+    expect(fileName).toContain('2025-09-05')
+    expect(fileName).toMatch(/\.json$/)
   })
 })
