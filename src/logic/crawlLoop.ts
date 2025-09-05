@@ -1,6 +1,6 @@
-import { crawl } from "./crawl"
+import crawl from "./crawl"
 
-export const crawlLoop = async (interval: number, maxRuns?: number): Promise<NodeJS.Timeout | undefined> => {
+export default async (interval: number, maxRuns?: number): Promise<NodeJS.Timeout | undefined> => {
   try {
     let count = 0
     await crawl()

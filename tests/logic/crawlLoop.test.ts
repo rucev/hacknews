@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 vi.mock('../../src/logic/crawl.ts', () => {
-  return { crawl: vi.fn() }
+  return { default: vi.fn() }
 })
 
-import { crawlLoop } from '../../src/logic/crawlLoop.ts'
-import { crawl } from '../../src/logic/crawl.ts'
+import crawlLoop from '../../src/logic/crawlLoop.ts'
+import crawl from '../../src/logic/crawl.ts'
 
 const crawlMock = crawl as unknown as ReturnType<typeof vi.fn>
 

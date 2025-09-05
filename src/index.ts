@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
-import { crawlLoop } from './logic/crawlLoop'
+import { crawlLoop, filterLongNewsSortByComments, filterShortNewsSortByPoints } from './logic/index'
 
 const program = new Command()
 
@@ -41,14 +41,15 @@ program
   .command('long')
   .description('generates a file with the last retrived data filtered by titles longer than 5 words and sorted by number of comments')
   .action(() => {
-    console.log('long')
+    filterLongNewsSortByComments()
   })
 
 program
   .command('short')
   .description('generates a file with the last retrived data filtered by titles with 5 words or less and sorted by points')
   .action(() => {
-    console.log('long')
+    console.log('short')
+    filterShortNewsSortByPoints()
   })
 
 program.parse(process.argv)
