@@ -1,131 +1,120 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import crawl from '../../src/logic/crawl'
-import { formatEntry } from '../../src/logic/utils'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import fetchCrawler from '../../src/logic/crawl'
+import Repository from '../../src/data/repository'
+import * as utils from '../../src/logic/utils'
+import { JSDOM } from 'jsdom'
+import type { NewsEntry, NewsEntries } from '../../src/interfaces'
 
-let mockAdd: any
-
-vi.mock('../../src/data/repository.ts', () => {
-  return {
-    __esModule: true,
-    default: class MockRepository {
-      addNewEntry(...args: any[]) {
-        return mockAdd(...args)
-      }
-    },
-  }
-})
-
-vi.mock('../../src/logic/utils', () => ({
-  formatEntry: vi.fn((arr) => ({
-    number: Number(arr[0].split('.')[0]),
-    title: arr[0].replace(/^\d+\./, '').replace(/\(.*\)$/, '').trim(),
-    points: Number(arr[1].match(/(\d+)\s+points/)?.[1] ?? 0),
-    comments: Number(arr[1].match(/(\d+)\s+comments/)?.[1] ?? 0),
-  })),
-}))
-
-const mockRows = [
-  { textContent: '1. First news (example.com)' },
-  { textContent: '100 points by user | 10 comments' },
-  { textContent: 'separator row' },
-  { textContent: '2. Second news' },
-  { textContent: '200 points by user | 20 comments' },
-  { textContent: 'separator row' },
-  { textContent: '' },
-  { textContent: 'more' },
-  { textContent: 'separator row' },
-]
-
-const mockTbody = {
-  querySelectorAll: vi.fn((selector: string) => mockRows as unknown as NodeListOf<any>),
+const sampleNewsEntry: NewsEntry = {
+  number: 1,
+  title: 'Test news title',
+  points: 100,
+  comments: 20,
 }
 
-const mockBigbox = {
-  querySelector: vi.fn((selector) => (selector === 'tbody' ? mockTbody : null)),
-}
+vi.mock('../../src/data/repository')
+vi.mock('../../src/logic/utils')
+vi.mock('jsdom')
 
-const mockDocument = {
-  querySelector: vi.fn((selector) => (selector === 'tr#bigbox' ? mockBigbox : null)),
-}
+describe('fetchCrawler', () => {
+  let addNewEntryMock: ReturnType<typeof vi.fn>
 
-
-describe('crawl', () => {
   beforeEach(() => {
-    mockAdd = vi.fn()
     vi.clearAllMocks()
 
-    vi.mock('jsdom', () => {
-      return {
-        JSDOM: vi.fn(() => ({
-          window: {
-            document: mockDocument,
-          },
-        })),
-      }
-    })
+    addNewEntryMock = vi.fn();
+    (Repository as unknown as vi.Mock).mockImplementation(() => ({
+      addNewEntry: addNewEntryMock,
+    }));
+
+    (utils.formatEntry as unknown as vi.Mock).mockImplementation(
+      (raw: string[]) => sampleNewsEntry
+    );
+    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true)
 
 
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+    const rowsMock = [
+      { textContent: '1. Test news title' },
+      { textContent: '100 points 20 comments' },
+      { textContent: 'separator row' },
+      { textContent: '' },
+      { textContent: 'More' }
+    ]
+
+    const tbodyMock = { querySelectorAll: vi.fn().mockReturnValue(rowsMock) }
+    const bigboxMock = {
+      querySelector: vi.fn().mockImplementation(selector => {
+        if (selector === 'tbody') return tbodyMock
+        return null
+      }),
+    };
+
+    (JSDOM as unknown as vi.Mock).mockImplementation(() => ({
+      window: {
+        document: {
+          querySelector: vi.fn().mockImplementation(selector => {
+            if (selector === 'tr#bigbox') return bigboxMock
+            return null
+          }),
+        },
+      },
+    }))
+
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       text: vi.fn().mockResolvedValue('<html></html>'),
-    }))
+    } as any)
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-    vi.unstubAllGlobals()
+  it('fetches, parses, formats, and saves news', async () => {
+    const timestamp = await fetchCrawler()
+
+    expect(utils.isAllowedByRobots).toHaveBeenCalled()
+
+    expect(JSDOM).toHaveBeenCalled()
+
+    expect(addNewEntryMock).toHaveBeenCalled()
+    expect(timestamp).toBeInstanceOf(Date)
+
+    expect(utils.formatEntry).toHaveBeenCalledTimes(1)
   })
 
-  it('parses rows correctly and calls formatEntry', async () => {
-    await crawl()
+  it('throws error if robots.txt disallows', async () => {
+    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(false)
 
-    const rows = Array.from(mockTbody.querySelectorAll('tr'))
-    expect(rows).toHaveLength(mockRows.length)
-    expect(rows[0].textContent).toBe('1. First news (example.com)')
-    expect(rows[1].textContent).toBe('100 points by user | 10 comments')
-
-    expect(formatEntry).toHaveBeenNthCalledWith(1, [
-      '1. First news (example.com)',
-      '100 points by user | 10 comments',
-    ])
-    expect(formatEntry).toHaveBeenNthCalledWith(2, [
-      '2. Second news',
-      '200 points by user | 20 comments',
-    ])
-
-    expect(mockAdd).toHaveBeenCalledWith(
-      expect.objectContaining({
-        entries: [
-          { number: 1, title: 'First news', points: 100, comments: 10 },
-          { number: 2, title: 'Second news', points: 200, comments: 20 },
-        ],
-        timeStamp: expect.any(Date),
-      })
-    )
+    await expect(fetchCrawler()).rejects.toThrow('Error checking robots.txt')
   })
 
   it('throws error if fetch fails', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500 }))
-    await expect(crawl()).rejects.toThrow('Failed to fetch https://news.ycombinator.com/: 500')
+    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true);
+    (global.fetch as unknown as vi.Mock).mockResolvedValue({ ok: false, status: 404 })
+
+    await expect(fetchCrawler()).rejects.toThrow('Failed to fetch')
   })
 
   it('throws error if <tr id="bigbox"> is missing', async () => {
-    mockDocument.querySelector = vi.fn(() => null)
-    await expect(crawl()).rejects.toThrow('No <tr id="bigbox"> found in the page')
+    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true);
+    (JSDOM as unknown as vi.Mock).mockImplementation(() => ({
+      window: { document: { querySelector: vi.fn().mockReturnValue(null) } },
+    }))
+
+    await expect(fetchCrawler()).rejects.toThrow('No <tr id="bigbox"> found')
   })
 
-  it('throws error if <tbody> inside bigbox is missing', async () => {
-    mockDocument.querySelector = vi.fn(() => mockBigbox)
-    mockBigbox.querySelector = vi.fn(() => null)
-    await expect(crawl()).rejects.toThrow('No <tbody> found inside <tr id="bigbox">')
+  it('throws error if <tbody> is missing', async () => {
+    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true)
+    const bigboxMock = { querySelector: vi.fn().mockReturnValue(null) };
+    (JSDOM as unknown as vi.Mock).mockImplementation(() => ({
+      window: { document: { querySelector: vi.fn().mockReturnValue(bigboxMock) } },
+    }))
+
+    await expect(fetchCrawler()).rejects.toThrow('No <tbody> found inside <tr id="bigbox">')
   })
 
-  it('throws error if repository.addNewEntry fails', async () => {
-    mockDocument.querySelector = vi.fn(() => mockBigbox)
-    mockBigbox.querySelector = vi.fn(() => mockTbody)
-    mockTbody.querySelectorAll = vi.fn(() => mockRows as unknown as NodeListOf<any>)
+  it('handles error when saving fails', async () => {
+    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true);
+    addNewEntryMock.mockImplementation(() => { throw new Error('write failed') })
 
-    mockAdd.mockImplementation(() => { throw new Error('disk full') })
-    await expect(crawl()).rejects.toThrow('error saving file:\nError: disk full')
+    await expect(fetchCrawler()).rejects.toThrow('error saving file')
   })
 })

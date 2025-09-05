@@ -1,6 +1,6 @@
 {
   "main": "./src/index.ts",
-  "name": "ycombinator-news-crawler",
+  "name": "hacknews",
   "author": "Flors Rueda",
   "type": "commonjs",
   "bin": {
