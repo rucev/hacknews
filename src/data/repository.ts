@@ -51,7 +51,7 @@ export default class Repository {
     fs.mkdirSync(this.folderPathLong, { recursive: true })
 
     const dateStr = new Date(timeStamp).toISOString().split('T')[0]
-    const fileName = path.join(this.folderPathLong, `${dateStr}-${Date.now()}.json`)
+    const fileName = path.join(this.folderPathLong, `${Date.now()}-${dateStr}.json`)
     fs.writeFileSync(fileName, JSON.stringify(entries, null, 2), 'utf-8')
   }
 
@@ -59,7 +59,7 @@ export default class Repository {
     fs.mkdirSync(this.folderPathShort, { recursive: true })
 
     const dateStr = new Date(timeStamp).toISOString().split('T')[0]
-    const fileName = path.join(this.folderPathShort, `${dateStr}-${Date.now()}.json`)
+    const fileName = path.join(this.folderPathShort, `${Date.now()}-${dateStr}.json`)
     fs.writeFileSync(fileName, JSON.stringify(entries, null, 2), 'utf-8')
   }
 }

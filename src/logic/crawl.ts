@@ -50,7 +50,7 @@ export default async (): Promise<Date | undefined> => {
   try {
     const newsEntries = { entries: news, timeStamp: new Date() }
     repo.addNewEntry(newsEntries)
-    console.log(`./data/entries.json - Last data saved at [${newsEntries.timeStamp}]`)
+    console.log(`build/data/entries.json - Last data saved at [${newsEntries.timeStamp}]`)
     return newsEntries.timeStamp
   } catch (error) {
     throw new Error(`error saving file:\n${error}`)
