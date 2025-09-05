@@ -1,0 +1,86 @@
+[
+  {
+    "number": 1,
+    "title": "I ditched Docker for Podman",
+    "points": 716,
+    "comments": 423
+  },
+  {
+    "number": 14,
+    "title": "Fil's Unbelievable Garbage Collector",
+    "points": 547,
+    "comments": 247
+  },
+  {
+    "number": 16,
+    "title": "I'm absolutely right",
+    "points": 494,
+    "comments": 219
+  },
+  {
+    "number": 30,
+    "title": "io_uring is faster than mmap",
+    "points": 264,
+    "comments": 117
+  },
+  {
+    "number": 2,
+    "title": "Purposeful animations",
+    "points": 203,
+    "comments": 62
+  },
+  {
+    "number": 8,
+    "title": "Interview with Japanese Demoscener 0b5vr",
+    "points": 139,
+    "comments": 15
+  },
+  {
+    "number": 7,
+    "title": "The Old Robots Web Site",
+    "points": 120,
+    "comments": 25
+  },
+  {
+    "number": 27,
+    "title": "Vetinari's Clock",
+    "points": 81,
+    "comments": 24
+  },
+  {
+    "number": 22,
+    "title": "SQL Needed Structure",
+    "points": 79,
+    "comments": 87
+  },
+  {
+    "number": 18,
+    "title": "Poisoning Well",
+    "points": 53,
+    "comments": 75
+  },
+  {
+    "number": 4,
+    "title": "MentraOS – open-source Smart glasses OS",
+    "points": 50,
+    "comments": 31
+  },
+  {
+    "number": 20,
+    "title": "Debugging Rustler on Illumos",
+    "points": 34,
+    "comments": 0
+  },
+  {
+    "number": 25,
+    "title": "Morse Code Translator",
+    "points": 33,
+    "comments": 58
+  },
+  {
+    "number": 21,
+    "title": "Relace",
+    "points": 0,
+    "comments": 0
+  }
+]

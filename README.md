@@ -49,6 +49,11 @@ hacknews long # filters the last registered news by number of words in the title
 hacknews short # filters the last registered news by number of words in the title (=>5) and sorts them by points
 ```
 
+#### Examples of generated .json
+- [All entries with a timeStamp](./docs/entries.json)
+- [Long title news filtered](./docs/1757102519928-2025-09-05.json)
+- [Short title news filtered](./docs/1757102524359-2025-09-05.json)
+
 ## Tests & Coverage
 
 Run tests and/or generate coverage reports:
