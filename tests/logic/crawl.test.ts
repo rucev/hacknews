@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { crawl } from '../../src/logic/crawl'
+import crawl from '../../src/logic/crawl'
 import { formatEntry } from '../../src/logic/utils'
 
 let mockAdd: any

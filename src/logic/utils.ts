@@ -19,3 +19,16 @@ export const formatEntry = (rawEntry: string[]): NewsEntry | null => {
 
   return { number, title, points, comments }
 }
+
+export const filterLongTitles = (entries: NewsEntry[]): NewsEntry[] => {
+  const filtered = entries.filter(entry => {
+    const wordCount = entry.title.trim().split(' ').filter(str => str.toUpperCase() !== str.toLowerCase()).length
+    return wordCount > 5
+  })
+
+  return filtered
+}
+
+export const sortByComments = (entries: NewsEntry[]): NewsEntry[] => {
+  return entries.sort((news1, news2) => news2.comments - news1.comments)
+}

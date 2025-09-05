@@ -3,7 +3,7 @@ import Repository from '../data/repository'
 import { formatEntry } from './utils'
 import { NewsEntry } from '../interfaces'
 
-export const crawl = async () => {
+export default async () => {
   console.log('wait a moment...')
 
   const url: string = 'https://news.ycombinator.com/'
