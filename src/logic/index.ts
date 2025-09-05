@@ -1,12 +1,12 @@
 import { JSDOM } from 'jsdom'
+import Repository from '../data/repository'
 
 export const crawl = async () => {
   const url: string = 'https://news.ycombinator.com/'
 
   const res = await fetch(url)
   if (!res.ok) {
-    console.error(`Failed to fetch ${url}: ${res.status}`)
-    return
+    throw new Error(`Failed to fetch ${url}: ${res.status}`)
   }
 
   const html = await res.text()
@@ -23,6 +23,13 @@ export const crawl = async () => {
   }
 
   console.log(`Text content from ${url}:\n`)
-  console.log(textContent)
-}
 
+  const repo = new Repository()
+
+  try {
+    repo.addNewEntry({ content: textContent, timeStamp: new Date() })
+    console.log(`Data saved on: ./data/entries.json`)
+  } catch (error) {
+    throw new Error(`error saving file:\n${error}`)
+  }
+}
