@@ -11,6 +11,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Coverage directory used by tools like istanbul
 coverage
+tests/data/*.json
 
 # Compiled binary addons
 build

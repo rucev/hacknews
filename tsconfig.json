@@ -1,17 +1,25 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "lib": [
-      "ES6"
-    ],
+    "module": "CommonJS",
+    "target": "ES2019",
     "outDir": "build",
+    "moduleResolution": "Node",
     "strict": true,
+    "esModuleInterop": true,
+    "lib": [
+      "ES6",
+      "DOM"
+    ],
     "types": [
       "node"
     ]
-  }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "tests/**/*.test.ts",
+    "vitest.config.js"
+  ],
 }
