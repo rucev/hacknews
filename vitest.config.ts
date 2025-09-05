@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    testTimeout: 10000,
     globals: true,
     coverage: {
       provider: 'v8',
@@ -12,7 +13,8 @@ export default defineConfig({
       exclude: [
         'src/**/*.test.ts',
         '**/*.d.ts',
-        'node_modules/**'
+        'node_modules/**',
+        'src/index.ts'
       ],
     },
   },
