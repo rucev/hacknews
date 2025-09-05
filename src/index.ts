@@ -8,7 +8,7 @@ const program = new Command()
 program
   .name('hacknews')
   .description('A CLI web crawler with scraping for the website news.ycombinator.com')
-  .version('0.0.1')
+  .version('1.0')
 
 program
   .command('run')
@@ -41,15 +41,25 @@ program
   .command('long')
   .description('generates a file with the last retrived data filtered by titles longer than 5 words and sorted by number of comments')
   .action(() => {
-    filterLongNewsSortByComments()
+    try {
+      filterLongNewsSortByComments()
+      console.log('check data on folder build/data/long')
+    } catch (error) {
+      console.error(error)
+    }
+
   })
 
 program
   .command('short')
   .description('generates a file with the last retrived data filtered by titles with 5 words or less and sorted by points')
   .action(() => {
-    console.log('short')
-    filterShortNewsSortByPoints()
+    try {
+      filterShortNewsSortByPoints()
+      console.log('check data on folder build/data/short')
+    } catch (error) {
+      console.error(error)
+    }
   })
 
 program.parse(process.argv)

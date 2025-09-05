@@ -1,12 +1,19 @@
 import { JSDOM } from 'jsdom'
 import Repository from '../data/repository'
-import { formatEntry } from './utils'
+import { formatEntry, isAllowedByRobots } from './utils'
 import { NewsEntry } from '../interfaces'
 
-export default async () => {
+export default async (): Promise<Date | undefined> => {
   console.log('wait a moment...')
 
   const url: string = 'https://news.ycombinator.com/'
+
+  try {
+    const isAllowed = isAllowedByRobots(url)
+    if (!isAllowed) throw new Error('Error checking robots.txt')
+  } catch (error) {
+    throw new Error('Error checking robots.txt')
+  }
 
   const res = await fetch(url)
   if (!res.ok) {
@@ -43,7 +50,8 @@ export default async () => {
   try {
     const newsEntries = { entries: news, timeStamp: new Date() }
     repo.addNewEntry(newsEntries)
-    console.log(`./data/entries.json - Last data saved at [${newsEntries.timeStamp}]`)
+    console.log(`build/data/entries.json - Last data saved at [${newsEntries.timeStamp}]`)
+    return newsEntries.timeStamp
   } catch (error) {
     throw new Error(`error saving file:\n${error}`)
   }
