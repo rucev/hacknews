@@ -8,7 +8,7 @@ const program = new Command()
 program
   .name('hacknews')
   .description('A CLI web crawler with scraping for the website news.ycombinator.com')
-  .version('0.0.1')
+  .version('1.0')
 
 program
   .command('run')
