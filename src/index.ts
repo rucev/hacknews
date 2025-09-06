@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
-import { crawlLoop, filterLongNewsSortByComments, filterShortNewsSortByPoints } from './logic/index'
+import { crawlLoop, filterLongNewsSortByComments, filterShortNewsSortByPoints, getNumberOne } from './logic/index'
 
 const program = new Command()
 
 program
   .name('hacknews')
   .description('A CLI web crawler with scraping for the website news.ycombinator.com')
-  .version('1.0')
+  .version('1.01')
 
 program
   .command('run')
@@ -31,7 +31,7 @@ program
     const timer = await crawlLoop(interval)
 
     process.on('SIGINT', () => {
-      console.log('\nStopping crawl loop...')
+      console.log('\n\x1b[1m\x1b[34mStopping crawl loop...\x1b[0m')
       clearInterval(timer)
       process.exit(0)
     })
@@ -43,9 +43,10 @@ program
   .action(() => {
     try {
       filterLongNewsSortByComments()
-      console.log('check data on folder build/data/long')
+
+      console.log(`\x1b[1m\x1b[32mDone!\x1b[0m\n\tcheck data on folder build/data/long`)
     } catch (error) {
-      console.error(error)
+      console.error(`\x1b[1m\x1b[31m${error}\x1b[0m`)
     }
 
   })
@@ -56,9 +57,20 @@ program
   .action(() => {
     try {
       filterShortNewsSortByPoints()
-      console.log('check data on folder build/data/short')
+      console.log(`\x1b[1m\x1b[32mDone!\x1b[0m\n\tcheck data on folder build/data/short`)
     } catch (error) {
-      console.error(error)
+      console.error(`\x1b[1m\x1b[31m${error}\x1b[0m`)
+    }
+  })
+
+program
+  .command('top')
+  .description('logs the info on article in number 1 position at the moment')
+  .action(() => {
+    try {
+      getNumberOne()
+    } catch (error) {
+      console.error(`\x1b[1m\x1b[31m${error}\x1b[0m`)
     }
   })
 

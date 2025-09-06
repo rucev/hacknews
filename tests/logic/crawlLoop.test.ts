@@ -11,17 +11,26 @@ const crawlMock = crawl as unknown as ReturnType<typeof vi.fn>
 
 describe('crawlLoop', () => {
   let timer: NodeJS.Timeout | undefined
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
     vi.useFakeTimers()
     crawlMock.mockReset()
     crawlMock.mockResolvedValue(undefined)
+
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => { })
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
   })
 
   afterEach(() => {
     if (timer) clearInterval(timer)
     vi.clearAllTimers()
     vi.useRealTimers()
+
+    consoleLogSpy.mockRestore()
+    consoleErrorSpy.mockRestore()
+
     vi.restoreAllMocks()
     timer = undefined
   })
@@ -39,7 +48,6 @@ describe('crawlLoop', () => {
 
   it('logs error when initial crawl fails', async () => {
     crawlMock.mockRejectedValueOnce(new Error('initial fail'))
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 
     const result = await crawlLoop(1000)
 
@@ -52,8 +60,6 @@ describe('crawlLoop', () => {
 
     crawlMock.mockResolvedValueOnce(undefined)
     crawlMock.mockRejectedValueOnce(new Error('interval fail'))
-
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 
     timer = await crawlLoop(interval)
 
@@ -70,8 +76,6 @@ describe('crawlLoop', () => {
       .mockResolvedValueOnce(undefined)
       .mockRejectedValueOnce(new Error('first interval'))
       .mockResolvedValueOnce(undefined)
-
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 
     timer = await crawlLoop(interval)
 

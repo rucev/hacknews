@@ -1,18 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { NewsEntry, NewsEntries } from '../../src/interfaces'
-
 import filterLongNewsSortByComments from '../../src/logic/filterLongNewsSortByComments'
 import Repository from '../../src/data/repository'
+import * as processors from '../../src/logic/processors'
 
-vi.mock('../../src/logic/utils', () => ({
+vi.mock('../../src/logic/processors', () => ({
   filterLongTitles: vi.fn((entries: NewsEntry[]) => entries),
   sortByComments: vi.fn((entries: NewsEntry[]) => entries),
 }))
 
-import * as utils from '../../src/logic/utils'
-
-describe('crawlLoop / processEntries', () => {
+describe('filterLongNewsSortByComments', () => {
   let repoMock: Repository
+
   const sampleEntries: NewsEntry[] = [
     { number: 1, title: 'Short title', points: 10, comments: 5 },
     { number: 2, title: 'This is a title with more than five words', points: 20, comments: 15 },
@@ -25,6 +24,8 @@ describe('crawlLoop / processEntries', () => {
   }
 
   beforeEach(() => {
+    vi.clearAllMocks()
+
     repoMock = {
       getMostRecentEntry: vi.fn().mockReturnValue(recentNews),
       saveFilteredLongEntry: vi.fn(),
@@ -32,21 +33,29 @@ describe('crawlLoop / processEntries', () => {
 
     vi.spyOn(Repository.prototype, 'getMostRecentEntry').mockImplementation(repoMock.getMostRecentEntry)
     vi.spyOn(Repository.prototype, 'saveFilteredLongEntry').mockImplementation(repoMock.saveFilteredLongEntry)
-
-    vi.spyOn(console, 'error').mockImplementation(() => { })
-
-    vi.clearAllMocks()
   })
 
-  it('filters long titles, sorts by comments, and calls saveFilteredLongEntry', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('filters long titles, sorts by comments, and saves the filtered entries', () => {
     filterLongNewsSortByComments()
 
     expect(repoMock.getMostRecentEntry).toHaveBeenCalled()
 
-    expect(utils.filterLongTitles).toHaveBeenCalledWith(sampleEntries)
-    expect(utils.sortByComments).toHaveBeenCalled()
+    expect(processors.filterLongTitles).toHaveBeenCalledWith(sampleEntries)
+    expect(processors.sortByComments).toHaveBeenCalledWith(sampleEntries)
 
-    const expectedFiltered = sampleEntries
-    expect(repoMock.saveFilteredLongEntry).toHaveBeenCalledWith(expectedFiltered, recentNews.timeStamp)
+    expect(repoMock.saveFilteredLongEntry).toHaveBeenCalledWith(sampleEntries, recentNews.timeStamp)
+  })
+
+  it('throws if no recent entries exist', () => {
+    repoMock.getMostRecentEntry = vi.fn().mockReturnValue(undefined)
+    vi.spyOn(Repository.prototype, 'getMostRecentEntry').mockImplementation(repoMock.getMostRecentEntry)
+
+    expect(() => filterLongNewsSortByComments()).toThrow(
+      `No entries. Run 'hacknews run [options]' first`
+    )
   })
 })

@@ -37,8 +37,10 @@ export default class Repository {
     fs.writeFileSync(this.filePath, JSON.stringify(oldEntries, null, 2), 'utf-8')
   }
 
-  getMostRecentEntry(): NewsEntries {
+  getMostRecentEntry(): NewsEntries | undefined {
     let oldEntries: NewsEntries[] = this.getOldEntries()
+
+    if (oldEntries.length === 0) return undefined
 
     const mostRecent = oldEntries.reduce((latest, current) => {
       return new Date(current.timeStamp) > new Date(latest.timeStamp) ? current : latest

@@ -1,4 +1,5 @@
 import type { NewsEntry } from '../interfaces/index.js'
+import { JSDOM } from 'jsdom'
 
 export const formatEntry = (rawEntry: string[]): NewsEntry | null => {
   if (!rawEntry || rawEntry.length < 2) return null
@@ -20,6 +21,34 @@ export const formatEntry = (rawEntry: string[]): NewsEntry | null => {
   return { number, title, points, comments }
 }
 
+export const processHtml = (html: string): NewsEntry[] | undefined => {
+  const dom = new JSDOM(html)
+  const document = dom.window.document
+
+  const bigboxTr = document.querySelector('tr#bigbox') //id of the row that has all the news in the website
+  if (!bigboxTr) {
+    throw new Error('No <tr id="bigbox"> found in the page')
+  }
+
+  const tbody = bigboxTr.querySelector('tbody')
+  if (!tbody) {
+    throw new Error('No <tbody> found inside <tr id="bigbox">')
+  }
+
+  const rows = Array.from(tbody.querySelectorAll('tr'))
+  const news: NewsEntry[] = []
+
+  for (let i = 0; i < rows.length - 3; i += 3) {
+    //each new has 3 rows, the last one is a separator so has no info.
+    //besides, the last row has the "more" shield, so it's excluded from this loop too.
+    const entryRaw = rows.slice(i, i + 2).map(tr => tr.textContent?.trim() || '')
+    const entry = formatEntry(entryRaw)
+    if (entry) news.push(entry)
+  }
+
+  return news
+}
+
 export const countWords = (text: string): number => {
   return text.trim().split(' ').filter(str => str.toUpperCase() !== str.toLowerCase()).length
 }
@@ -38,35 +67,4 @@ export const sortByComments = (entries: NewsEntry[]): NewsEntry[] => {
 
 export const sortByPoints = (entries: NewsEntry[]): NewsEntry[] => {
   return entries.sort((news1, news2) => news2.points - news1.points)
-}
-
-export const isAllowedByRobots = async (url: string): Promise<boolean> => {
-  try {
-    const { origin, pathname } = new URL(url)
-    const robotsUrl = `${origin}/robots.txt`
-
-    const res = await fetch(robotsUrl)
-    if (!res.ok) {
-      console.warn('robots.txt not found, assuming allowed.')
-      return true
-    }
-
-    const robotsTxt = await res.text()
-    const lines = robotsTxt.split('\n').map(l => l.trim())
-
-    let appliesToUs = false
-    for (const line of lines) {
-      if (line.toLowerCase().startsWith('user-agent:')) {
-        appliesToUs = line.toLowerCase().includes('*')
-      } else if (appliesToUs && line.toLowerCase().startsWith('disallow:')) {
-        const disallowedPath = line.split(':')[1]?.trim()
-        if (disallowedPath && pathname.startsWith(disallowedPath)) {
-          return false
-        }
-      }
-    }
-    return true
-  } catch (error) {
-    return false
-  }
 }
