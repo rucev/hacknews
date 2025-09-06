@@ -1,5 +1,5 @@
 import Repository from '../data/repository'
-import { filterShortTitles, sortByPoints } from './utils'
+import { filterShortTitles, sortByPoints } from './processors'
 
 export default () => {
   const repo = new Repository()

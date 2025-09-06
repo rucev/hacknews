@@ -1,7 +1,8 @@
 import { JSDOM } from 'jsdom'
 import Repository from '../data/repository'
-import { formatEntry, isAllowedByRobots } from './utils'
+import { isAllowedByRobots } from './robotsValidator'
 import { NewsEntry } from '../interfaces'
+import { formatEntry } from './processors'
 
 export default async (): Promise<Date | undefined> => {
   console.log('wait a moment...')

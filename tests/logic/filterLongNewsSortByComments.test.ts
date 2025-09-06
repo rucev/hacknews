@@ -4,14 +4,14 @@ import type { NewsEntry, NewsEntries } from '../../src/interfaces'
 import filterLongNewsSortByComments from '../../src/logic/filterLongNewsSortByComments'
 import Repository from '../../src/data/repository'
 
-vi.mock('../../src/logic/utils', () => ({
+vi.mock('../../src/logic/processors', () => ({
   filterLongTitles: vi.fn((entries: NewsEntry[]) => entries),
   sortByComments: vi.fn((entries: NewsEntry[]) => entries),
 }))
 
-import * as utils from '../../src/logic/utils'
+import * as utils from '../../src/logic/processors'
 
-describe('crawlLoop / processEntries', () => {
+describe('filters long titles, sorts by comments, and calls saveFilteredShortEntry', () => {
   let repoMock: Repository
   const sampleEntries: NewsEntry[] = [
     { number: 1, title: 'Short title', points: 10, comments: 5 },

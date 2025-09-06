@@ -4,12 +4,12 @@ import type { NewsEntry, NewsEntries } from '../../src/interfaces'
 import filterShortNewsSortByPoints from '../../src/logic/filterShortNewsSortByPoints'
 import Repository from '../../src/data/repository'
 
-vi.mock('../../src/logic/utils', () => ({
+vi.mock('../../src/logic/processors', () => ({
   filterShortTitles: vi.fn((entries: NewsEntry[]) => entries),
   sortByPoints: vi.fn((entries: NewsEntry[]) => entries),
 }))
 
-import * as utils from '../../src/logic/utils'
+import * as utils from '../../src/logic/processors'
 
 describe('filters short titles, sorts by pints, and calls saveFilteredShortEntry', () => {
   let repoMock: Repository

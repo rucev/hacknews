@@ -1,5 +1,5 @@
 import Repository from '../data/repository'
-import { filterLongTitles, sortByComments } from './utils'
+import { filterLongTitles, sortByComments } from './processors'
 
 export default () => {
   const repo = new Repository()

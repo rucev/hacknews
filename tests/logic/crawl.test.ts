@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import fetchCrawler from '../../src/logic/crawl'
 import Repository from '../../src/data/repository'
-import * as utils from '../../src/logic/utils'
+import * as robotsValidator from '../../src/logic/robotsValidator'
+import * as processors from '../../src/logic/processors'
 import { JSDOM } from 'jsdom'
-import type { NewsEntry, NewsEntries } from '../../src/interfaces'
+import type { NewsEntry } from '../../src/interfaces'
 
 const sampleNewsEntry: NewsEntry = {
   number: 1,
@@ -13,7 +14,8 @@ const sampleNewsEntry: NewsEntry = {
 }
 
 vi.mock('../../src/data/repository')
-vi.mock('../../src/logic/utils')
+vi.mock('../../src/logic/robotsValidator')
+vi.mock('../../src/logic/processors')
 vi.mock('jsdom')
 
 describe('fetchCrawler', () => {
@@ -27,10 +29,10 @@ describe('fetchCrawler', () => {
       addNewEntry: addNewEntryMock,
     }));
 
-    (utils.formatEntry as unknown as vi.Mock).mockImplementation(
+    (processors.formatEntry as unknown as vi.Mock).mockImplementation(
       (raw: string[]) => sampleNewsEntry
     );
-    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true)
+    (robotsValidator.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true)
 
 
     const rowsMock = [
@@ -69,31 +71,31 @@ describe('fetchCrawler', () => {
   it('fetches, parses, formats, and saves news', async () => {
     const timestamp = await fetchCrawler()
 
-    expect(utils.isAllowedByRobots).toHaveBeenCalled()
+    expect(robotsValidator.isAllowedByRobots).toHaveBeenCalled()
 
     expect(JSDOM).toHaveBeenCalled()
 
     expect(addNewEntryMock).toHaveBeenCalled()
     expect(timestamp).toBeInstanceOf(Date)
 
-    expect(utils.formatEntry).toHaveBeenCalledTimes(1)
+    expect(processors.formatEntry).toHaveBeenCalledTimes(1)
   })
 
   it('throws error if robots.txt disallows', async () => {
-    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(false)
+    (robotsValidator.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(false)
 
     await expect(fetchCrawler()).rejects.toThrow('Error checking robots.txt')
   })
 
   it('throws error if fetch fails', async () => {
-    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true);
+    (robotsValidator.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true);
     (global.fetch as unknown as vi.Mock).mockResolvedValue({ ok: false, status: 404 })
 
     await expect(fetchCrawler()).rejects.toThrow('Failed to fetch')
   })
 
   it('throws error if <tr id="bigbox"> is missing', async () => {
-    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true);
+    (robotsValidator.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true);
     (JSDOM as unknown as vi.Mock).mockImplementation(() => ({
       window: { document: { querySelector: vi.fn().mockReturnValue(null) } },
     }))
@@ -102,7 +104,7 @@ describe('fetchCrawler', () => {
   })
 
   it('throws error if <tbody> is missing', async () => {
-    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true)
+    (robotsValidator.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true)
     const bigboxMock = { querySelector: vi.fn().mockReturnValue(null) };
     (JSDOM as unknown as vi.Mock).mockImplementation(() => ({
       window: { document: { querySelector: vi.fn().mockReturnValue(bigboxMock) } },
@@ -112,7 +114,7 @@ describe('fetchCrawler', () => {
   })
 
   it('handles error when saving fails', async () => {
-    (utils.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true);
+    (robotsValidator.isAllowedByRobots as unknown as vi.Mock).mockReturnValue(true);
     addNewEntryMock.mockImplementation(() => { throw new Error('write failed') })
 
     await expect(fetchCrawler()).rejects.toThrow('error saving file')
