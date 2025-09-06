@@ -1,6 +1,10 @@
-import { describe, it, expect } from 'vitest'
-import { filterLongTitles, filterShortTitles, sortByComments, sortByPoints, formatEntry, countWords } from '../../src/logic/processors'
+import { describe, it, expect, vi } from 'vitest'
+import { filterLongTitles, filterShortTitles, sortByComments, sortByPoints, formatEntry, countWords, processHtml } from '../../src/logic/processors'
 import type { NewsEntry } from '../../src/interfaces'
+import { JSDOM } from 'jsdom'
+import { beforeEach } from 'node:test'
+
+vi.mock('jsdom')
 
 const entries: NewsEntry[] = [
   { number: 1, title: 'Short title', points: 10, comments: 5 },
@@ -117,5 +121,63 @@ describe('formatEntry', () => {
     ]
     const result = formatEntry(rawEntry)
     expect(result?.title).toBe('Some news title')
+  })
+})
+
+describe('processHtml', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+      ; (formatEntry as vi.Mock).mockReturnValue(entries)
+  })
+
+  it('parses HTML and formats multiple news entries', () => {
+    const rowsMock = [
+      { textContent: '1. Short title' },
+      { textContent: '10 points 5 comments' },
+      { textContent: 'separator' },
+
+      { textContent: '2. This is a title with exactly six words' },
+      { textContent: '20 points 15 comments' },
+      { textContent: 'separator' },
+
+      { textContent: '3. Another very long news title for testing' },
+      { textContent: '30 points 25 comments' },
+      { textContent: 'separator' },
+
+      { textContent: '4. Tiny' },
+      { textContent: '5 points 2 comments' },
+      { textContent: 'separator' },
+
+      { textContent: 'More' },
+    ]
+
+    const tbodyMock = { querySelectorAll: vi.fn().mockReturnValue(rowsMock) }
+    const bigboxMock = { querySelector: vi.fn().mockImplementation(sel => sel === 'tbody' ? tbodyMock : null) }
+    const documentMock = { querySelector: vi.fn().mockImplementation(sel => sel === 'tr#bigbox' ? bigboxMock : null) }
+
+      ; (JSDOM as unknown as vi.Mock).mockImplementation(() => ({
+        window: { document: documentMock }
+      }))
+
+    const result = processHtml('<html></html>')
+
+    expect(result).toEqual(entries)
+  })
+
+  it('throws if <tr id="bigbox"> is missing', () => {
+    ; (JSDOM as unknown as vi.Mock).mockImplementation(() => ({
+      window: { document: { querySelector: vi.fn().mockReturnValue(null) } }
+    }))
+
+    expect(() => processHtml('<html></html>')).toThrow('No <tr id="bigbox"> found')
+  })
+
+  it('throws if <tbody> is missing', () => {
+    const bigboxMock = { querySelector: vi.fn().mockReturnValue(null) }
+      ; (JSDOM as unknown as vi.Mock).mockImplementation(() => ({
+        window: { document: { querySelector: vi.fn().mockReturnValue(bigboxMock) } }
+      }))
+
+    expect(() => processHtml('<html></html>')).toThrow('No <tbody> found inside <tr id="bigbox">')
   })
 })

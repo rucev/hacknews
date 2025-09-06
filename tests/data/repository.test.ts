@@ -28,10 +28,15 @@ import fs from 'fs'
 
 describe('Repository', () => {
   let repo: Repository
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
     repo = new Repository()
     vi.clearAllMocks()
+
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => { })
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
   })
 
   it('creates directory if missing when adding new entry', () => {
