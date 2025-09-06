@@ -15,6 +15,16 @@ A **web crawler** CLI built with TypeScript that scrapes news from [Hacker News]
 - [Vitest](https://vitest.dev/)
 - [tsx](https://tsx.is/)
 
+## Features
+
+### Line commands and friendly feedback
+
+![](./docs/success.png)
+
+### Useful error messages
+
+![](./docs/error.png)
+
 ## How to use
 ### 1. Clone or download the repository:
 ```bash
@@ -33,7 +43,7 @@ npm i
 
 ```bash
 npm run build
-npm link # may not be necessary, just if you're having issues
+npm link # Optional; use only if you encounter issues
 ```
 
 ### 5. Use any of the available commands
@@ -41,6 +51,8 @@ npm link # may not be necessary, just if you're having issues
 ```bash
 hacknews --help #-h
 hacknews --version #-v
+
+hacknews top # logs the info on article in number 1 position at the moment
 
 # The following generate .json on the folder ./build/data
 hacknews run -m # keeps running, updating the saved data every minute 
@@ -56,19 +68,21 @@ hacknews short # filters the last registered news by number of words in the titl
 
 ## Tests & Coverage
 
-Run tests and/or generate coverage reports:
+### Run tests and/or generate coverage reports:
 
 ```bash
 npm run test
 npm run test-coverage
 ```
 
+### Coverage
+
 ![](./docs/coverage.png)
 
-## Excluded files:
+### Excluded files:
 All the index.ts files have been excluded of testing for one of the following reasons:
-- They contain mainly imports of files tested on its own
-- They depend greatly of a library already tested by it's development team
+- They contain mainly imports of files tested on its own.
+- They depend heavily of a library already tested by its development team.
 
 ## Project Structure
 
